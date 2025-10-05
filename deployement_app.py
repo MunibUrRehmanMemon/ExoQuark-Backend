@@ -6,6 +6,7 @@ import numpy as np
 
 try:
     from flask_cors import CORS
+
     HAS_FLASK_CORS = True
 except Exception:
     HAS_FLASK_CORS = False
@@ -13,15 +14,17 @@ except Exception:
 import lightgbm as lgb  # <-- Added import
 
 # Use relative paths for model directories
-MODEL_DIR = Path(__file__).parent / "All_Satellite_Models_xgb_stack"
+MODEL_DIR = Path(
+    __file__).parent / "All_Satellite_Models_xgb_stack" / "kaggle" / "working" / "All_Satellite_Models_xgb_stack"
 TESS_MODEL_DIR = MODEL_DIR / "tess"
 API_KEY = None
 
 SATELLITES = {
     "kepler": {"basename": "kepler_koi", "dir": MODEL_DIR / "kepler"},
-    "k2":     {"basename": "k2_pandc", "dir": MODEL_DIR / "k2"},
-    "tess":   {"basename": "tess_toi", "dir": TESS_MODEL_DIR}
+    "k2": {"basename": "k2_pandc", "dir": MODEL_DIR / "k2"},
+    "tess": {"basename": "tess_toi", "dir": TESS_MODEL_DIR}
 }
+
 
 def load_obj(p):
     try:
@@ -34,12 +37,56 @@ def load_obj(p):
         except Exception:
             raise
 
+
 def load_store():
+    # Add comprehensive debug logging
+    print(f"=== DEBUG: load_store() ===")
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Script location: {Path(__file__).parent}")
+    print(f"MODEL_DIR path: {MODEL_DIR}")
+    print(f"MODEL_DIR exists: {MODEL_DIR.exists()}")
+    print(f"MODEL_DIR absolute: {MODEL_DIR.absolute()}")
+
+    # Check if the base directory exists
+    base_dir = Path(__file__).parent / "All_Satellite_Models_xgb_stack"
+    print(f"Base model dir: {base_dir}")
+    print(f"Base model dir exists: {base_dir.exists()}")
+
+    if base_dir.exists():
+        print(f"Base model dir contents: {list(base_dir.iterdir())}")
+
+        # Check kaggle/working path
+        kaggle_dir = base_dir / "kaggle"
+        if kaggle_dir.exists():
+            print(f"Kaggle dir contents: {list(kaggle_dir.iterdir())}")
+            working_dir = kaggle_dir / "working"
+            if working_dir.exists():
+                print(f"Working dir contents: {list(working_dir.iterdir())}")
+                inner_dir = working_dir / "All_Satellite_Models_xgb_stack"
+                if inner_dir.exists():
+                    print(f"Inner model dir contents: {list(inner_dir.iterdir())}")
+
+    # Check script directory contents
+    script_dir = Path(__file__).parent
+    if script_dir.exists():
+        print(f"Script directory contents: {[str(p) for p in script_dir.iterdir()]}")
+
     store = {}
     for sat, info in SATELLITES.items():
         d = info["dir"]
+        print(f"\n=== LOADING {sat.upper()} ===")
+        print(f"[{sat}] Directory path: {d}")
+        print(f"[{sat}] Directory exists: {d.exists()}")
+        print(f"[{sat}] Directory absolute: {d.absolute()}")
+
+        if d.exists():
+            print(f"[{sat}] Directory contents: {list(d.iterdir())}")
+        else:
+            print(f"[{sat}] Directory does not exist!")
+
         store[sat] = {"dir": str(d), "files": {}}
         basename = info["basename"]
+
         if sat in ("kepler", "k2"):
             model_p = d / f"{basename}_xgb.pkl"
             imp_p = d / f"{basename}_imputer.joblib"
@@ -47,20 +94,45 @@ def load_store():
             feats_p = d / f"{basename}_features_list.json"
             meta_p = d / f"{basename}_metadata.json"
             calib_p = d / f"{basename}_calibrators.joblib"
-            for k, p in [("model", model_p), ("imputer", imp_p), ("scaler", sc_p), ("features", feats_p), ("metadata", meta_p), ("calibrators", calib_p)]:
+
+            print(f"[{sat}] Looking for files:")
+            for name, path in [("xgb", model_p), ("imputer", imp_p), ("scaler", sc_p), ("features", feats_p),
+                               ("metadata", meta_p), ("calibrators", calib_p)]:
+                exists = path.exists()
+                print(f"  {name}: {path} -> {exists}")
+
+            for k, p in [("model", model_p), ("imputer", imp_p), ("scaler", sc_p), ("features", feats_p),
+                         ("metadata", meta_p), ("calibrators", calib_p)]:
                 store[sat]["files"][k] = str(p) if p.exists() else None
-            try: store[sat]["model"] = load_obj(store[sat]["files"]["model"]) if store[sat]["files"]["model"] else None
-            except Exception as e: print("Load model error", sat, e); store[sat]["model"] = None
-            try: store[sat]["imputer"] = load_obj(store[sat]["files"]["imputer"]) if store[sat]["files"]["imputer"] else None
-            except: store[sat]["imputer"] = None
-            try: store[sat]["scaler"] = load_obj(store[sat]["files"]["scaler"]) if store[sat]["files"]["scaler"] else None
-            except: store[sat]["scaler"] = None
-            try: store[sat]["features"] = json.load(open(store[sat]["files"]["features"])) if store[sat]["files"]["features"] else None
-            except: store[sat]["features"] = None
-            try: store[sat]["metadata"] = json.load(open(store[sat]["files"]["metadata"])) if store[sat]["files"]["metadata"] else {}
-            except: store[sat]["metadata"] = {}
-            try: store[sat]["calibrators"] = load_obj(store[sat]["files"]["calibrators"]) if store[sat]["files"]["calibrators"] else {}
-            except: store[sat]["calibrators"] = {}
+            try:
+                store[sat]["model"] = load_obj(store[sat]["files"]["model"]) if store[sat]["files"]["model"] else None
+            except Exception as e:
+                print(f"Load model error {sat}: {e}"); store[sat]["model"] = None
+            try:
+                store[sat]["imputer"] = load_obj(store[sat]["files"]["imputer"]) if store[sat]["files"][
+                    "imputer"] else None
+            except Exception as e:
+                print(f"Load imputer error {sat}: {e}"); store[sat]["imputer"] = None
+            try:
+                store[sat]["scaler"] = load_obj(store[sat]["files"]["scaler"]) if store[sat]["files"][
+                    "scaler"] else None
+            except Exception as e:
+                print(f"Load scaler error {sat}: {e}"); store[sat]["scaler"] = None
+            try:
+                store[sat]["features"] = json.load(open(store[sat]["files"]["features"])) if store[sat]["files"][
+                    "features"] else None
+            except Exception as e:
+                print(f"Load features error {sat}: {e}"); store[sat]["features"] = None
+            try:
+                store[sat]["metadata"] = json.load(open(store[sat]["files"]["metadata"])) if store[sat]["files"][
+                    "metadata"] else {}
+            except Exception as e:
+                print(f"Load metadata error {sat}: {e}"); store[sat]["metadata"] = {}
+            try:
+                store[sat]["calibrators"] = load_obj(store[sat]["files"]["calibrators"]) if store[sat]["files"][
+                    "calibrators"] else {}
+            except Exception as e:
+                print(f"Load calibrators error {sat}: {e}"); store[sat]["calibrators"] = {}
         else:  # tess stacking layout
             model_xgb = d / "tess_toi_xgb.pkl"
             model_lgb = d / "tess_toi_lgbm.txt"
@@ -70,6 +142,13 @@ def load_store():
             feats_p = d / "tess_toi_features_list.json"
             meta_p = d / "tess_toi_metadata.json"
             calib_p = d / "tess_toi_calibrators.joblib"
+
+            print(f"[{sat}] Looking for files:")
+            for name, path in [("xgb", model_xgb), ("lgb", model_lgb), ("meta", meta_m), ("imputer", imp_p),
+                               ("scaler", sc_p), ("features", feats_p), ("metadata", meta_p), ("calibrators", calib_p)]:
+                exists = path.exists()
+                print(f"  {name}: {path} -> {exists}")
+
             store[sat]["files"] = {
                 "xgb": str(model_xgb) if model_xgb.exists() else None,
                 "lgb": str(model_lgb) if model_lgb.exists() else None,
@@ -80,30 +159,60 @@ def load_store():
                 "metadata": str(meta_p) if meta_p.exists() else None,
                 "calibrators": str(calib_p) if calib_p.exists() else None
             }
-            try: store[sat]["xgb"] = load_obj(store[sat]["files"]["xgb"]) if store[sat]["files"]["xgb"] else None
-            except: store[sat]["xgb"] = None
+            try:
+                store[sat]["xgb"] = load_obj(store[sat]["files"]["xgb"]) if store[sat]["files"]["xgb"] else None
+            except Exception as e:
+                print(f"Load xgb error {sat}: {e}"); store[sat]["xgb"] = None
             # FIX: Use LightGBM Booster for lgbm.txt
-            try: store[sat]["lgb"] = lgb.Booster(model_file=store[sat]["files"]["lgb"]) if store[sat]["files"]["lgb"] else None
-            except: store[sat]["lgb"] = None
-            try: store[sat]["meta"] = load_obj(store[sat]["files"]["meta"]) if store[sat]["files"]["meta"] else None
-            except: store[sat]["meta"] = None
-            try: store[sat]["imputer"] = load_obj(store[sat]["files"]["imputer"]) if store[sat]["files"]["imputer"] else None
-            except: store[sat]["imputer"] = None
-            try: store[sat]["scaler"] = load_obj(store[sat]["files"]["scaler"]) if store[sat]["files"]["scaler"] else None
-            except: store[sat]["scaler"] = None
-            try: store[sat]["features"] = json.load(open(store[sat]["files"]["features"])) if store[sat]["files"]["features"] else None
-            except: store[sat]["features"] = None
-            try: store[sat]["metadata"] = json.load(open(store[sat]["files"]["metadata"])) if store[sat]["files"]["metadata"] else {}
-            except: store[sat]["metadata"] = {}
-            try: store[sat]["calibrators"] = load_obj(store[sat]["files"]["calibrators"]) if store[sat]["files"]["calibrators"] else {}
-            except: store[sat]["calibrators"] = {}
+            try:
+                store[sat]["lgb"] = lgb.Booster(model_file=store[sat]["files"]["lgb"]) if store[sat]["files"][
+                    "lgb"] else None
+            except Exception as e:
+                print(f"Load lgb error {sat}: {e}"); store[sat]["lgb"] = None
+            try:
+                store[sat]["meta"] = load_obj(store[sat]["files"]["meta"]) if store[sat]["files"]["meta"] else None
+            except Exception as e:
+                print(f"Load meta error {sat}: {e}"); store[sat]["meta"] = None
+            try:
+                store[sat]["imputer"] = load_obj(store[sat]["files"]["imputer"]) if store[sat]["files"][
+                    "imputer"] else None
+            except Exception as e:
+                print(f"Load imputer error {sat}: {e}"); store[sat]["imputer"] = None
+            try:
+                store[sat]["scaler"] = load_obj(store[sat]["files"]["scaler"]) if store[sat]["files"][
+                    "scaler"] else None
+            except Exception as e:
+                print(f"Load scaler error {sat}: {e}"); store[sat]["scaler"] = None
+            try:
+                store[sat]["features"] = json.load(open(store[sat]["files"]["features"])) if store[sat]["files"][
+                    "features"] else None
+            except Exception as e:
+                print(f"Load features error {sat}: {e}"); store[sat]["features"] = None
+            try:
+                store[sat]["metadata"] = json.load(open(store[sat]["files"]["metadata"])) if store[sat]["files"][
+                    "metadata"] else {}
+            except Exception as e:
+                print(f"Load metadata error {sat}: {e}"); store[sat]["metadata"] = {}
+            try:
+                store[sat]["calibrators"] = load_obj(store[sat]["files"]["calibrators"]) if store[sat]["files"][
+                    "calibrators"] else {}
+            except Exception as e:
+                print(f"Load calibrators error {sat}: {e}"); store[sat]["calibrators"] = {}
+
+    print(f"\n=== LOAD SUMMARY ===")
+    for sat in store:
+        print(f"{sat}: files found: {sum(1 for v in store[sat]['files'].values() if v is not None)}")
+        print(f"  features loaded: {store[sat].get('features') is not None}")
+
     return store
+
 
 STORE = load_store()
 
 app = Flask(__name__)
 if HAS_FLASK_CORS:
     CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 @app.after_request
 def add_cors(resp):
@@ -113,14 +222,39 @@ def add_cors(resp):
         resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     return resp
 
+
 def check_key(req):
     if API_KEY is None: return True
     key = req.headers.get("X-API-KEY") or req.args.get("api_key")
     return str(API_KEY).strip().strip('"').strip("'") == str(key)
 
+
 @app.route("/")
 def index():
     return Response("<h3>Multi-satellite model API</h3>", mimetype="text/html")
+
+
+@app.route("/debug")
+def debug_paths():
+    return jsonify({
+        "cwd": os.getcwd(),
+        "script_dir": str(Path(__file__).parent),
+        "model_dir": str(MODEL_DIR),
+        "model_dir_exists": MODEL_DIR.exists(),
+        "base_model_dir_exists": (Path(__file__).parent / "All_Satellite_Models_xgb_stack").exists(),
+        "script_dir_contents": [str(p) for p in Path(__file__).parent.iterdir()] if Path(
+            __file__).parent.exists() else [],
+        "satellites": {
+            sat: {
+                "dir": str(info["dir"]),
+                "dir_exists": info["dir"].exists(),
+                "features_file_exists": (info["dir"] / f"{info['basename']}_features_list.json").exists() if info[
+                    "dir"].exists() else False
+            }
+            for sat, info in SATELLITES.items()
+        }
+    })
+
 
 @app.route("/status")
 def status():
@@ -131,9 +265,11 @@ def status():
             "model_loaded": bool(STORE[sat].get("model") or STORE[sat].get("xgb")),
             "dir": STORE[sat]["dir"],
             "files": STORE[sat]["files"],
-            "metadata": STORE[sat].get("metadata", {})
+            "metadata": STORE[sat].get("metadata", {}),
+            "features_loaded": STORE[sat].get("features") is not None
         }
     return jsonify(out)
+
 
 def build_vector(features_list, features_dict):
     X = []
@@ -153,6 +289,7 @@ def build_vector(features_list, features_dict):
             X.append(np.nan)
     return np.array([X], dtype=float)
 
+
 def apply_calibrators(calibs, classes, probs):
     out_probs = probs.copy()
     for i, c in enumerate(classes):
@@ -167,14 +304,18 @@ def apply_calibrators(calibs, classes, probs):
         out_probs = out_probs / s
     return out_probs
 
+
 @app.route("/features/<sat>")
 def features(sat):
     if not check_key(request): return jsonify({"error": "invalid_api_key"}), 401
     sat = sat.lower()
     if sat not in STORE: return jsonify({"error": "unknown_satellite"}), 400
     feats = STORE[sat].get("features")
-    if feats is None: return jsonify({"error": "features_list_missing"}), 500
+    if feats is None:
+        print(f"ERROR: Features missing for {sat}. Store content: {STORE[sat]}")
+        return jsonify({"error": "features_list_missing"}), 500
     return jsonify({"features": feats, "metadata": STORE[sat].get("metadata", {})})
+
 
 @app.route("/predict/<sat>", methods=["POST"])
 def predict(sat):
@@ -193,8 +334,10 @@ def predict(sat):
     try:
         imputer = store.get("imputer")
         scaler = store.get("scaler")
-        if imputer is not None: X_proc = imputer.transform(Xraw)
-        else: X_proc = Xraw
+        if imputer is not None:
+            X_proc = imputer.transform(Xraw)
+        else:
+            X_proc = Xraw
         if scaler is not None: X_proc = scaler.transform(X_proc)
     except Exception as e:
         return jsonify({"error": "transform_error", "detail": str(e), "trace": traceback.format_exc()}), 500
@@ -209,7 +352,8 @@ def predict(sat):
             else:
                 pred = model.predict(X_proc)[0]
                 probs = np.array([1.0])
-            classes = store.get("metadata", {}).get("classes") or (getattr(model, "classes_", None).tolist() if hasattr(model, "classes_") else None)
+            classes = store.get("metadata", {}).get("classes") or (
+                getattr(model, "classes_", None).tolist() if hasattr(model, "classes_") else None)
             if classes is None:
                 classes = [str(i) for i in range(len(probs))]
             calibs = store.get("calibrators", {}) or {}
@@ -233,11 +377,13 @@ def predict(sat):
             if sat == "kepler":
                 koi_label = pred_class
                 is_exo = koi_label.strip().upper() != "FALSE POSITIVE"
-                return jsonify({"probability": float(pred_prob), "koi_pdisposition": koi_label, "is_exoplanet": bool(is_exo)})
+                return jsonify(
+                    {"probability": float(pred_prob), "koi_pdisposition": koi_label, "is_exoplanet": bool(is_exo)})
             else:  # k2
                 archive_disp = pred_class
                 planet_type = "exo" if archive_disp.strip().upper() != "FALSE POSITIVE" else "not_exo"
-                return jsonify({"probability": float(pred_prob), "archive_disposition": archive_disp, "planet_type": planet_type})
+                return jsonify(
+                    {"probability": float(pred_prob), "archive_disposition": archive_disp, "planet_type": planet_type})
 
         elif sat == "tess":
             xgbm = store.get("xgb")
@@ -295,10 +441,12 @@ def predict(sat):
     except Exception as e:
         return jsonify({"error": "inference_error", "detail": str(e), "trace": traceback.format_exc()}), 500
 
+
 if __name__ == "__main__":
     print("Starting app; MODEL_DIR:", MODEL_DIR)
     print("TESS_MODEL_DIR:", TESS_MODEL_DIR)
     for s in STORE:
         print(s, "loaded files:", STORE[s]["files"])
+        print(s, "features loaded:", STORE[s].get("features") is not None)
     # Bind to 0.0.0.0 and use PORT from environment
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
