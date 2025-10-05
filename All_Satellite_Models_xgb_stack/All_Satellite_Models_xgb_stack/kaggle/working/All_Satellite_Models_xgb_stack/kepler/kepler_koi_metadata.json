@@ -1,0 +1,37 @@
+{
+  "basename": "kepler_koi",
+  "model_file": "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_xgb.pkl",
+  "imputer_file": "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_imputer.joblib",
+  "scaler_file": "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_scaler.joblib",
+  "features_file": "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_features_list.json",
+  "fold_models": [
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold0_xgb.pkl",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold1_xgb.pkl",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold2_xgb.pkl",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold3_xgb.pkl",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold4_xgb.pkl"
+  ],
+  "fold_imputers": [
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold0_imputer.joblib",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold1_imputer.joblib",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold2_imputer.joblib",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold3_imputer.joblib",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold4_imputer.joblib"
+  ],
+  "fold_scalers": [
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold0_scaler.joblib",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold1_scaler.joblib",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold2_scaler.joblib",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold3_scaler.joblib",
+    "/kaggle/working/All_Satellite_Models_xgb_stack/kepler/kepler_koi_fold4_scaler.joblib"
+  ],
+  "classes": [
+    "CANDIDATE",
+    "FALSE POSITIVE"
+  ],
+  "class_thresholds": {
+    "CANDIDATE": 0.4167507290840149,
+    "FALSE POSITIVE": 0.423877090215683
+  },
+  "oof_macro_f1": 0.9028240290638685
+}

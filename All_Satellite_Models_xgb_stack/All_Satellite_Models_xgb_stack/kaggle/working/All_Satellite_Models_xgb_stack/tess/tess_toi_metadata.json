@@ -1,0 +1,39 @@
+{
+  "basename": "tess_toi",
+  "models_xgb": [
+    "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_xgb_fold0.pkl",
+    "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_xgb_fold1.pkl",
+    "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_xgb_fold2.pkl",
+    "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_xgb_fold3.pkl",
+    "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_xgb_fold4.pkl"
+  ],
+  "models_lgb": [
+    "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_lgb_fold0.txt",
+    "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_lgb_fold1.txt",
+    "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_lgb_fold2.txt",
+    "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_lgb_fold3.txt",
+    "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_lgb_fold4.txt"
+  ],
+  "final_xgb": "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_xgb.pkl",
+  "final_lgb": "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_lgbm.txt",
+  "meta_model": "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_stack_meta.pkl",
+  "imputer": "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_imputer.joblib",
+  "scaler": "/kaggle/working/All_Satellite_Models_tess_stack/tess/tess_toi_scaler.joblib",
+  "classes": [
+    "APC",
+    "CP",
+    "FA",
+    "FP",
+    "KP",
+    "PC"
+  ],
+  "class_thresholds": {
+    "APC": 0.24345381400338578,
+    "CP": 0.3867467374699849,
+    "FA": 0.35074334088277376,
+    "FP": 0.23338788730455973,
+    "KP": 0.3595440932528429,
+    "PC": 0.06924504700610114
+  },
+  "oof_meta_macro_f1": 0.4597881611031515
+}
