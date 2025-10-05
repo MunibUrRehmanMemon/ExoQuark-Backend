@@ -1,3 +1,4 @@
+python
 # deployement_app.py - multi-satellite model server (XGB + stacked TESS)
 from flask import Flask, request, jsonify, Response
 import os, json, joblib, traceback
@@ -12,7 +13,8 @@ except Exception:
 
 import lightgbm as lgb  # <-- Added import
 
-MODEL_DIR = Path(r"C:\Users\TECHNOSELLERS\Downloads\All_Satellite_Models_xgb_stack\kaggle\working\All_Satellite_Models_xgb_stack")
+# Use relative paths for model directories
+MODEL_DIR = Path(__file__).parent / "All_Satellite_Models_xgb_stack"
 TESS_MODEL_DIR = MODEL_DIR / "tess"
 API_KEY = None
 
@@ -299,4 +301,5 @@ if __name__ == "__main__":
     print("TESS_MODEL_DIR:", TESS_MODEL_DIR)
     for s in STORE:
         print(s, "loaded files:", STORE[s]["files"])
-    app.run(host="127.0.0.1", port=5000)
+    # Bind to 0.0.0.0 and use PORT from environment
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
