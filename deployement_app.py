@@ -1,4 +1,3 @@
-python
 # deployement_app.py - multi-satellite model server (XGB + stacked TESS)
 from flask import Flask, request, jsonify, Response
 import os, json, joblib, traceback
